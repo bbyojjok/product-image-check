@@ -15,7 +15,7 @@ const ProductImageCheckSchema = new Schema({
 });
 
 const ProductImageCheck = mongoose.model(
-  'productimagecheck_240131_test',
+  'productimagecheck_240418_test',
   ProductImageCheckSchema,
 );
 
