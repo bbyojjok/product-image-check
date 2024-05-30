@@ -2,6 +2,8 @@ import fs from 'fs';
 import path from 'path';
 import mongoose from 'mongoose';
 import axios from 'axios';
+import { makeDirectory } from 'make-dir';
+import xl from 'excel4node';
 import cheerio from 'cheerio';
 import ProductImageCheck from './models/products.js';
 
@@ -52,6 +54,46 @@ const csvToDb = async () => {
   } catch (e) {
     console.log('[ERROR] db 저장 실패');
   }
+};
+
+const dbToXlsx = async () => {
+  /**
+   * 엑셀파일로 저장
+   */
+
+  // 폴더 생성
+  await makeDirectory(`xlsx`);
+
+  // 엑셀
+  const wb = new xl.Workbook();
+  const ws = wb.addWorksheet(`Sheet 1`);
+  const style_head = wb.createStyle({
+    font: { bold: true, color: '#000000', size: 13 },
+    alignment: { horizontal: ['center'], vertical: ['center'] },
+  });
+  const style_right = wb.createStyle({ alignment: { horizontal: ['right'] } });
+
+  ws.cell(1, 1).string('code').style(style_head);
+  ws.cell(1, 2).string('status').style(style_head);
+  ws.column(1).setWidth(15);
+  ws.column(2).setWidth(15);
+
+  const data = await ProductImageCheck.find({ status: '404' }).exec();
+  data.forEach((v, i) => {
+    const num = i + 2;
+    const { code, status } = v;
+    ws.cell(num, 1).string(code).style(style_right);
+    ws.cell(num, 2).string(status).style(style_right);
+  });
+
+  // 엑셀 저장
+  wb.write(`xlsx/productsCode_240418_test.xlsx`, (err, stats) => {
+    if (err) {
+      console.error(err);
+    } else {
+      console.log('xlsx 파일 저장');
+    }
+  });
 };
 
 const imgUrlMaker = (code) => {
@@ -110,7 +152,10 @@ const checkImage = async (code) => {
 };
 
 (async () => {
-  // csvToDb(); // csv 파일 db에 저장
+  // await csvToDb(); // csv 파일 db에 저장
+  // return;
+
+  // await dbToXlsx(); // xlsx 파일로 저장
   // return;
 
   const rows = await ProductImageCheck.find({ status: null }).exec();
