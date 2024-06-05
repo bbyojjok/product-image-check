@@ -127,7 +127,7 @@ const checkImage = async (code) => {
       statusArr.push(result.status);
       // console.log(`status: ${result.status}`);
     } catch (e) {
-      statusArr.push(e.response.status);
+      statusArr.push('404');
       // console.log(`status: ${e.response.status}`);
     }
   }
@@ -151,11 +151,22 @@ const checkImage = async (code) => {
   }
 };
 
+const statusCounting = async () => {
+  const statusCount = await ProductImageCheck.aggregate([
+    { $group: { _id: '$status', count: { $count: {} } } },
+    { $sort: { _id: 1 } },
+  ]);
+  console.log(statusCount);
+};
+
 (async () => {
   // await csvToDb(); // csv 파일 db에 저장
   // return;
 
   // await dbToXlsx(); // xlsx 파일로 저장
+  // return;
+
+  // await statusCounting(); // status 카운팅
   // return;
 
   const rows = await ProductImageCheck.find({ status: null }).exec();
@@ -166,7 +177,7 @@ const checkImage = async (code) => {
     console.log(`code: ${rows[i].code}`);
     await checkImage(rows[i].code);
     console.log(`----------------------------------------`);
-    await delay(1000);
+    await delay(500);
   }
 })();
 
@@ -184,4 +195,5 @@ const checkImage = async (code) => {
 3. db에 satus: null 인 row 조회
 4. img url 체크
 5. 체크된 결과 db에 저장
+6. db 읽어 엑셀파일로 저장
 */
