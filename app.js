@@ -18,12 +18,12 @@ await mongoose
 
 const delay = (time = 0) => new Promise((res) => setTimeout(res, time));
 
-const getCsv = () => {
+const getCsv = (date) => {
   /**
    * csv 상품코드 가져오기
    */
   const __dirname = path.resolve();
-  const FILE_NAME = 'productsCode_20240417.csv';
+  const FILE_NAME = `productsCode_${date}.csv`;
   const csvPath = path.join(__dirname, './csv', FILE_NAME);
   console.log(csvPath);
 
@@ -42,11 +42,11 @@ const getCsv = () => {
   return result;
 };
 
-const csvToDb = async () => {
+const csvToDb = async (date) => {
   /**
    * 상품코드 db 저장
    */
-  const codes = getCsv();
+  const codes = getCsv(date);
   try {
     const result = await ProductImageCheck.insertMany(codes).exec();
     console.log(result);
@@ -56,7 +56,7 @@ const csvToDb = async () => {
   }
 };
 
-const dbToXlsx = async () => {
+const dbToXlsx = async (date) => {
   /**
    * 엑셀파일로 저장
    */
@@ -87,7 +87,7 @@ const dbToXlsx = async () => {
   });
 
   // 엑셀 저장
-  wb.write(`xlsx/productsCode_240418_test.xlsx`, (err, stats) => {
+  wb.write(`xlsx/productsCode_${date}.xlsx`, (err, stats) => {
     if (err) {
       console.error(err);
     } else {
@@ -160,11 +160,11 @@ const statusCounting = async () => {
 };
 
 (async () => {
-  // await csvToDb(); // csv 파일 db에 저장
+  // await csvToDb('240417'); // csv 파일 db에 저장
   // return;
 
-  // await dbToXlsx(); // xlsx 파일로 저장
-  // return;
+  await dbToXlsx('240417'); // xlsx 파일로 저장
+  return;
 
   // await statusCounting(); // status 카운팅
   // return;
