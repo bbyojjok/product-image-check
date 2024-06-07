@@ -6,6 +6,7 @@ import { makeDirectory } from 'make-dir';
 import xl from 'excel4node';
 import cheerio from 'cheerio';
 import ProductImageCheck from './models/products.js';
+import { applyDate } from './models/products.js';
 
 await mongoose
   .connect('mongodb://127.0.0.1:27017', { dbName: 'product-image-check' })
@@ -159,17 +160,8 @@ const statusCounting = async () => {
   console.log(statusCount);
 };
 
-(async () => {
-  // await csvToDb('240417'); // csv 파일 db에 저장
-  // return;
-
-  await dbToXlsx('240417'); // xlsx 파일로 저장
-  return;
-
-  // await statusCounting(); // status 카운팅
-  // return;
-
-  const rows = await ProductImageCheck.find({ status: null }).exec();
+const check = async () => {
+  const rows = await ProductImageCheck.find({ status: '404' }).exec();
   console.log(rows);
   console.log(`========================================`);
 
@@ -179,6 +171,21 @@ const statusCounting = async () => {
     console.log(`----------------------------------------`);
     await delay(500);
   }
+};
+
+(async () => {
+  console.log('applyDate:', applyDate);
+
+  // await csvToDb(applyDate); // csv 파일 db에 저장
+  // return;
+
+  // await dbToXlsx(applyDate); // xlsx 파일로 저장
+  // return;
+
+  await statusCounting(); // status 카운팅
+  return;
+
+  await check(); // 이미지체크
 })();
 
 /**

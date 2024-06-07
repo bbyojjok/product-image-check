@@ -1,5 +1,7 @@
 import mongoose from 'mongoose';
 
+export const applyDate = '240418';
+
 const { Schema } = mongoose;
 
 const ProductImageCheckSchema = new Schema({
@@ -15,7 +17,7 @@ const ProductImageCheckSchema = new Schema({
 });
 
 const ProductImageCheck = mongoose.model(
-  'productimagecheck_240418_test',
+  `productimagecheck_${applyDate}_test`,
   ProductImageCheckSchema,
 );
 
