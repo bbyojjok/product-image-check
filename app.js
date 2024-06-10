@@ -17,6 +17,7 @@ await mongoose
     console.error(e);
   });
 
+const fileName = 'productsCode_';
 const delay = (time = 0) => new Promise((res) => setTimeout(res, time));
 
 const getCsv = (date) => {
@@ -24,7 +25,7 @@ const getCsv = (date) => {
    * csv 상품코드 가져오기
    */
   const __dirname = path.resolve();
-  const FILE_NAME = `productsCode_${date}.csv`;
+  const FILE_NAME = `${fileName + date}.csv`;
   const csvPath = path.join(__dirname, './csv', FILE_NAME);
   console.log(csvPath);
 
@@ -48,13 +49,14 @@ const csvToDb = async (date) => {
    * 상품코드 db 저장
    */
   const codes = getCsv(date);
-  try {
-    const result = await ProductImageCheck.insertMany(codes).exec();
-    console.log(result);
-    console.log('csv파일 상품코드 db 저장 완료');
-  } catch (e) {
-    console.log('[ERROR] db 저장 실패');
-  }
+  console.log(codes);
+  // try {
+  //   const result = await ProductImageCheck.insertMany(codes).exec();
+  //   console.log(result);
+  //   console.log('csv파일 상품코드 db 저장 완료');
+  // } catch (e) {
+  //   console.log('[ERROR] db 저장 실패');
+  // }
 };
 
 const dbToXlsx = async (date) => {
@@ -88,7 +90,7 @@ const dbToXlsx = async (date) => {
   });
 
   // 엑셀 저장
-  wb.write(`xlsx/productsCode_${date}.xlsx`, (err, stats) => {
+  wb.write(`xlsx/${fileName + date}.xlsx`, (err, stats) => {
     if (err) {
       console.error(err);
     } else {
@@ -143,7 +145,7 @@ const checkImage = async (code) => {
   try {
     const doc = await ProductImageCheck.findOneAndUpdate(
       { code },
-      { status },
+      { status, url: url[0] },
       { new: true },
     ).exec();
     console.log(doc);
@@ -154,21 +156,29 @@ const checkImage = async (code) => {
 
 const statusCounting = async () => {
   const statusCount = await ProductImageCheck.aggregate([
-    { $group: { _id: '$status', count: { $count: {} } } },
+    { $group: { _id: '$status', count: { $sum: 1 } } },
     { $sort: { _id: 1 } },
   ]);
   console.log(statusCount);
 };
 
 const check = async () => {
-  const rows = await ProductImageCheck.find({ status: '404' }).exec();
-  console.log(rows);
+  const rows = await ProductImageCheck.find({ status: null }).exec();
+  if (rows.length === 0) {
+    console.log(`status: null 체크할 row갯수가 0`);
+    return;
+  } else {
+    console.log(rows);
+  }
   console.log(`========================================`);
 
   for (let i = 0; i < rows.length; i++) {
     console.log(`code: ${rows[i].code}`);
     await checkImage(rows[i].code);
     console.log(`----------------------------------------`);
+    if (i === rows.length - 1) {
+      console.log('########## 종료 ##########');
+    }
     await delay(500);
   }
 };
@@ -183,7 +193,7 @@ const check = async () => {
   // return;
 
   await statusCounting(); // status 카운팅
-  return;
+  // return;
 
   await check(); // 이미지체크
 })();
