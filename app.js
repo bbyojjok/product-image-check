@@ -4,7 +4,6 @@ import mongoose from 'mongoose';
 import axios from 'axios';
 import { makeDirectory } from 'make-dir';
 import xl from 'excel4node';
-import cheerio from 'cheerio';
 import ProductImageCheck from './models/products.js';
 import { applyDate } from './models/products.js';
 
