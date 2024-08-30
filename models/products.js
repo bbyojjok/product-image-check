@@ -1,6 +1,9 @@
 import mongoose from 'mongoose';
 
-export const applyDate = '240418';
+// export const applyDate = '240131';
+// export const applyDate = '240226';
+// export const applyDate = '240418';
+export const applyDate = '240722';
 
 const { Schema } = mongoose;
 
@@ -16,14 +19,16 @@ const ProductImageCheckSchema = new Schema(
       type: Date,
       default: Date.now(),
     },
+    test_name: { type: String },
+    test_result: { type: String },
   },
   {
-    collection: `productimagecheck_${applyDate}_tests`,
+    collection: `productimagecheck_${applyDate}`,
   },
 );
 
 const ProductImageCheck = mongoose.model(
-  `Productimagecheck_${applyDate}_tests`,
+  `Productimagecheck_${applyDate}`,
   ProductImageCheckSchema,
 );
 

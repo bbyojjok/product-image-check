@@ -26,8 +26,6 @@ const getCsv = (date) => {
   const __dirname = path.resolve();
   const FILE_NAME = `${fileName + date}.csv`;
   const csvPath = path.join(__dirname, './csv', FILE_NAME);
-  console.log(csvPath);
-
   const csv = fs.readFileSync(csvPath, 'utf-8');
   const rows = csv.split('\r\n');
   rows.shift();
@@ -38,7 +36,6 @@ const getCsv = (date) => {
     acc.push({ code: cur });
     return acc;
   }, []);
-  console.log(result);
 
   return result;
 };
@@ -49,13 +46,13 @@ const csvToDb = async (date) => {
    */
   const codes = getCsv(date);
   console.log(codes);
-  // try {
-  //   const result = await ProductImageCheck.insertMany(codes).exec();
-  //   console.log(result);
-  //   console.log('csv파일 상품코드 db 저장 완료');
-  // } catch (e) {
-  //   console.log('[ERROR] db 저장 실패');
-  // }
+  try {
+    const result = await ProductImageCheck.insertMany(codes);
+    console.log(result);
+    console.log('csv파일 상품코드 db 저장 완료');
+  } catch (e) {
+    console.log('[ERROR] db 저장 실패', e);
+  }
 };
 
 const dbToXlsx = async (date) => {
@@ -81,6 +78,12 @@ const dbToXlsx = async (date) => {
   ws.column(2).setWidth(15);
 
   const data = await ProductImageCheck.find({ status: '404' }).exec();
+  // const data = await ProductImageCheck.find({
+  //   status: '404',
+  //   code: { $regex: /^2/ },
+  //   test_name: '이미지재처리',
+  //   test_result: '404',
+  // }).exec();
   data.forEach((v, i) => {
     const num = i + 2;
     const { code, status } = v;
@@ -89,6 +92,7 @@ const dbToXlsx = async (date) => {
   });
 
   // 엑셀 저장
+  // wb.write(`xlsx/${fileName + date}_이미지재처리.xlsx`, (err, stats) => {
   wb.write(`xlsx/${fileName + date}.xlsx`, (err, stats) => {
     if (err) {
       console.error(err);
@@ -147,6 +151,12 @@ const checkImage = async (code) => {
       { status, url: url[0] },
       { new: true },
     ).exec();
+
+    // const doc = await ProductImageCheck.findOneAndUpdate(
+    //   { code },
+    //   { test_name: '이미지재처리', test_result: status },
+    //   { new: true },
+    // ).exec();
     console.log(doc);
   } catch (e) {
     console.log('[ERROR] db 저장 실패');
@@ -159,15 +169,22 @@ const statusCounting = async () => {
     { $sort: { _id: 1 } },
   ]);
   console.log(statusCount);
+  await delay(3000);
 };
 
 const check = async () => {
   const rows = await ProductImageCheck.find({ status: null }).exec();
+  // const rows = await ProductImageCheck.find({ status: '404' }).exec();
+  // const rows = await ProductImageCheck.find({
+  //   status: '404',
+  //   code: { $regex: /^2/ },
+  // }).exec();
+  console.log(rows);
+  await delay(3000);
+
   if (rows.length === 0) {
     console.log(`status: null 체크할 row갯수가 0`);
     return;
-  } else {
-    console.log(rows);
   }
   console.log(`========================================`);
 
@@ -184,17 +201,15 @@ const check = async () => {
 
 (async () => {
   console.log('applyDate:', applyDate);
-
   // await csvToDb(applyDate); // csv 파일 db에 저장
   // return;
 
+  await statusCounting(); // status 카운팅
+
+  // await check(); // 이미지체크
+
   // await dbToXlsx(applyDate); // xlsx 파일로 저장
   // return;
-
-  await statusCounting(); // status 카운팅
-  // return;
-
-  await check(); // 이미지체크
 })();
 
 /**
